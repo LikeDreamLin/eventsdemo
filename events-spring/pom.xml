@@ -1,0 +1,60 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+   xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+   <modelVersion>4.0.0</modelVersion>
+   <parent>
+      <groupId>sandbox</groupId>
+      <artifactId>events-parent</artifactId>
+      <version>0.0.1-SNAPSHOT</version>
+   </parent>
+   <artifactId>events-spring</artifactId>
+
+   <properties>
+      <spring.version>3.1.3.RELEASE</spring.version>
+   </properties>
+   <dependencies>
+      <dependency>
+         <groupId>${project.groupId}</groupId>
+         <artifactId>events-common</artifactId>
+         <version>${project.version}</version>
+      </dependency>
+      <!-- SPRING -->
+      <dependency>
+         <groupId>org.springframework</groupId>
+         <artifactId>spring-context</artifactId>
+         <version>${spring.version}</version>
+      </dependency>
+
+      <dependency>
+         <groupId>org.springframework</groupId>
+         <artifactId>spring-beans</artifactId>
+         <version>${spring.version}</version>
+      </dependency>
+
+      <dependency>
+         <groupId>org.springframework</groupId>
+         <artifactId>spring-core</artifactId>
+         <version>${spring.version}</version>
+         <exclusions>
+            <exclusion>
+               <artifactId>commons-logging</artifactId>
+               <groupId>commons-logging</groupId>
+            </exclusion>
+         </exclusions>
+      </dependency>
+
+      <dependency>
+         <groupId>org.springframework</groupId>
+         <artifactId>spring-test</artifactId>
+         <version>${spring.version}</version>
+         <scope>test</scope>
+      </dependency>
+
+      <dependency>
+         <groupId>org.slf4j</groupId>
+         <artifactId>jcl-over-slf4j</artifactId>
+         <version>${slf4j.version}</version>
+         <scope>runtime</scope>
+      </dependency>
+   </dependencies>
+   <name>Spring based event (publish-subscribe) demo</name>
+</project>
