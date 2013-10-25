@@ -6,7 +6,7 @@ import org.slf4j.LoggerFactory;
 
 import events.common.Event;
 
-public class CamelSpringProducer
+public class CamelSpringProducer implements EventProducer
 {
     private static final Logger LOGGER = LoggerFactory.getLogger(EventsCamelDemo.class);
     private final ProducerTemplate producerTemplate;
@@ -16,6 +16,7 @@ public class CamelSpringProducer
         this.producerTemplate = producerTemplate;
     }
 
+    @Override
     public void sendEvent(Event event)
     {
         LOGGER.info("Sending event {}", event);

@@ -14,7 +14,7 @@ import events.common.Event;
 public class CamelEventSpringTest extends AbstractTestNGSpringContextTests
 {
     @Autowired 
-    private CamelSpringProducer producer;
+    private EventProducer producer;
     
     @Autowired
     @Qualifier("consumer1")
