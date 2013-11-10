@@ -10,7 +10,7 @@ public class EventsCamelDemoSpring
     public static void main(String[] args)
     {
         ApplicationContext ctx = new ClassPathXmlApplicationContext("META-INF/event.camel.spring.xml");
-        EventProducer producer = ctx.getBean(CamelSpringProducer.class);
+        CamelSpringProducer producer = ctx.getBean(CamelSpringProducer.class);
         producer.sendEvent(Event.FINISH_WORKING);
     }
 
