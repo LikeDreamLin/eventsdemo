@@ -5,26 +5,78 @@
           http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
           http://camel.apache.org/schema/spring http://camel.apache.org/schema/spring/camel-spring.xsd">
 
-   <bean id="consumer1" class="events.camel.CamelSpringConsumer" />
-   <bean id="consumer2" class="events.camel.CamelSpringConsumer" />
-   <bean id="producer" class="events.camel.CamelSpringProducer">
+   <!-- Two consumers to act in publish/subscribe test -->
+   <bean id="consumer1" class="events.camel.PoJoConsumer" />
+   <bean id="consumer2" class="events.camel.PoJoConsumer" />
+
+   <!-- Businesspartner and VehicleConsumer for routingSlip test -->
+   <bean id="businessPartnerConsumer" class="events.camel.PoJoConsumer" />
+   <bean id="vehicleConsumer" class="events.camel.PoJoConsumer" />
+
+   <!-- Wrapper for a TemplateProducer -->
+   <bean id="producer" class="events.camel.Producer">
       <constructor-arg>
          <ref bean="producer.template" />
       </constructor-arg>
    </bean>
+
+   <!-- Extract a thread locale tenant at producer side, set it on consumer 
+      side -->
+   <bean id="headerEnricher" class="events.camel.HeaderEnricher" />
+   <bean id="headerProducer" class="events.camel.HeaderProducer" />
+
    <camel:camelContext id="camel.demo">
-      <camel:template defaultEndpoint="direct:producer" id="producer.template" />
+      <camel:template defaultEndpoint="direct:producer"
+         id="producer.template" />
+      <!-- send to direct component, add tenant to header, pass to multiple 
+         seda consumers -->
       <camel:route>
          <camel:from uri="direct:producer" />
-         <camel:to uri="seda:consumer?multipleConsumers=true" />
+         <camel:bean ref="headerEnricher" />
+         <camel:multicast>
+            <camel:to uri="seda:consumer?multipleConsumers=true" />
+            <!-- This sends it to another camel context, see below -->
+            <camel:to uri="vm:consumer" />
+         </camel:multicast>
+      </camel:route>
+      <!-- Consume from seda after extracting tenant from header -->
+      <camel:route>
+         <camel:from uri="seda:consumer?multipleConsumers=true" />
+         <camel:bean ref="headerProducer" />
+         <camel:bean ref="consumer1" method="handleEvent" />
       </camel:route>
       <camel:route>
-        <camel:from uri="seda:consumer?multipleConsumers=true"/>
-        <camel:bean ref="consumer1" method="handleEvent"/> 
+         <camel:from uri="seda:consumer?multipleConsumers=true" />
+         <camel:bean ref="headerProducer" />
+         <camel:bean ref="consumer2" method="handleEvent" />
       </camel:route>
+
+      <!-- Routing slip based on header field 'routingSlip' -->
       <camel:route>
-        <camel:from uri="seda:consumer?multipleConsumers=true"/>
-        <camel:bean ref="consumer2" method="handleEvent"/> 
+         <camel:from uri="direct:routingSlip" />
+         <camel:routingSlip>
+            <camel:header>routingSlip</camel:header>
+         </camel:routingSlip>
+      </camel:route>
+      <!-- Routing slip destination businessPartner -->
+      <camel:route>
+         <camel:from uri="direct:businessPartner" />
+         <camel:bean ref="businessPartnerConsumer" />
+      </camel:route>
+      <!-- Routing slip destination vehicle -->
+      <camel:route>
+         <camel:from uri="direct:vehicle" />
+         <camel:bean ref="vehicleConsumer" />
+      </camel:route>
+   </camel:camelContext>
+
+   <!-- Another consumer in other camel context -->
+   <bean id="consumer3" class="events.camel.PoJoConsumer" />
+   <camel:camelContext id="camel.demo.2">
+      <camel:route>
+         <camel:from uri="vm:consumer" />
+         <camel:bean ref="headerProducer" />
+         <camel:bean ref="consumer3" method="handleEvent" />
       </camel:route>
    </camel:camelContext>
 

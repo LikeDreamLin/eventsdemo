@@ -6,12 +6,18 @@ import org.slf4j.LoggerFactory;
 
 import events.common.Event;
 
-public class CamelSpringProducer
+/**
+ * Wrapper for {@link ProducerTemplate}.
+ * Sends an {@link Event}.
+ * @author Anders Malmborg
+ *
+ */
+public class Producer
 {
     private static final Logger LOGGER = LoggerFactory.getLogger(EventsCamelDemo.class);
     private final ProducerTemplate producerTemplate;
 
-    public CamelSpringProducer(ProducerTemplate producerTemplate)
+    public Producer(ProducerTemplate producerTemplate)
     {
         this.producerTemplate = producerTemplate;
     }
