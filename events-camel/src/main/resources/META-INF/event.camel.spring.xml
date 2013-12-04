@@ -25,9 +25,9 @@
    <bean id="headerEnricher" class="events.camel.HeaderEnricher" />
    <bean id="headerProducer" class="events.camel.HeaderProducer" />
 
-   <camel:camelContext id="camel.demo">
       <camel:template defaultEndpoint="direct:producer"
-         id="producer.template" />
+         id="producer.template" camelContextId="camel.demo"/>
+   <camel:camelContext id="camel.demo">
       <!-- send to direct component, add tenant to header, pass to multiple 
          seda consumers -->
       <camel:route>
@@ -78,6 +78,11 @@
          <camel:bean ref="headerProducer" />
          <camel:bean ref="consumer3" method="handleEvent" />
       </camel:route>
+<!--       <camel:route> -->
+<!--          <camel:from uri="vm:consumer" /> -->
+<!--          <camel:bean ref="headerProducer" /> -->
+<!--          <camel:bean ref="service" method="consumeAndSave" /> -->
+<!--       </camel:route> -->
    </camel:camelContext>
 
 </beans>

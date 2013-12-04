@@ -1,7 +1,6 @@
 package events.camel;
 
-import static org.testng.Assert.assertEquals;
-import static org.testng.Assert.assertNull;
+import static org.testng.Assert.*;
 
 import org.apache.camel.ProducerTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -56,11 +55,11 @@ public class CamelEventSpringTest extends AbstractTestNGSpringContextTests
     public void publishSubscribe()
     {
         TenantHolder.setTenant("1");
-        producer.sendEvent(Event.START_WORKING);
+        assertEquals(producer.sendAndReceiveEvent(Event.START_WORKING), Event.START_WORKING);
         assertEquals(consumer1.lastEvent, Event.START_WORKING);
         assertEquals(consumer2.lastEvent, Event.START_WORKING);
         assertEquals(consumer3.lastEvent, Event.START_WORKING);
-        producer.sendEvent(Event.FINISH_WORKING);
+        assertEquals(producer.sendAndReceiveEvent(Event.FINISH_WORKING), Event.FINISH_WORKING);
         assertEquals(consumer1.lastEvent, Event.FINISH_WORKING);
         assertEquals(consumer2.lastEvent, Event.FINISH_WORKING);
         assertEquals(consumer2.tenant, "1main");

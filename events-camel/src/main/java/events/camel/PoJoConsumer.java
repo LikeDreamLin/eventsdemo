@@ -18,11 +18,12 @@ public class PoJoConsumer
     Event lastEvent;
     String tenant;
 
-    public void handleEvent(Event event)
+    public Object handleEvent(Event event)
     {
         LOGGER.info("{} got {}", PoJoConsumer.class.getSimpleName(), event);
         lastEvent = event;
         tenant = TenantHolder.getTenant();
+        return event;
     }
 
 }

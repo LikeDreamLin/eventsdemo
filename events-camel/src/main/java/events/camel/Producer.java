@@ -14,7 +14,7 @@ import events.common.Event;
  */
 public class Producer
 {
-    private static final Logger LOGGER = LoggerFactory.getLogger(EventsCamelDemo.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(Producer.class);
     private final ProducerTemplate producerTemplate;
 
     public Producer(ProducerTemplate producerTemplate)
@@ -22,10 +22,18 @@ public class Producer
         this.producerTemplate = producerTemplate;
     }
 
+    public Object sendAndReceiveEvent(Event event)
+    {
+        LOGGER.info("Sending event '{}' awainting response", event);
+        Object response = producerTemplate.requestBody(event);
+        LOGGER.info("Event response:'{}'", response.toString());
+        return response;
+    }
+    
     public void sendEvent(Event event)
     {
         LOGGER.info("Sending event {}", event);
-        producerTemplate.requestBody(event);
+        producerTemplate.sendBody(event);
     }
 
 }

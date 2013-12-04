@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:camel="http://camel.apache.org/schema/spring"
+   xsi:schemaLocation="
+          http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+          http://camel.apache.org/schema/spring http://camel.apache.org/schema/spring/camel-spring.xsd">
+
+   <!-- Wrapper for a TemplateProducer -->
+   <bean id="producer" class="events.camel.Producer">
+      <constructor-arg>
+         <ref bean="producer.template" />
+      </constructor-arg>
+   </bean>
+
+   <camel:camelContext id="camel.demo.service">
+      <camel:template defaultEndpoint="direct:producer"
+         id="producer.template" />
+      <!-- send to direct component, pass to seda consumer -->
+      <camel:route>
+         <camel:from uri="direct:producer" />
+         <camel:to uri="seda:consumer" />
+      </camel:route>
+      <camel:route>
+         <camel:from uri="seda:consumer" />
+         <!-- Due to seda runs in other thread -->
+         <camel:bean ref="service" method="consumeAndRead" />
+      </camel:route>
+   </camel:camelContext>
+
+   <bean id="service" class="events.camel.services.StockServiceImpl">
+      <constructor-arg ref="stockRepository" />
+      <constructor-arg ref="producer" />
+   </bean>
+</beans>
