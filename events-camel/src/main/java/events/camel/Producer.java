@@ -22,7 +22,7 @@ public class Producer
         this.producerTemplate = producerTemplate;
     }
 
-    public Object sendAndReceiveEvent(Event event)
+    public Object sendAndReceiveEvent(Object event)
     {
         LOGGER.info("Sending event '{}' awainting response", event);
         Object response = producerTemplate.requestBody(event);
@@ -30,7 +30,7 @@ public class Producer
         return response;
     }
     
-    public void sendEvent(Event event)
+    public void sendEvent(Object event)
     {
         LOGGER.info("Sending event {}", event);
         producerTemplate.sendBody(event);

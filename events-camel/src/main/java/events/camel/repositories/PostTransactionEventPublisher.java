@@ -13,16 +13,18 @@ import events.common.Event;
 public class PostTransactionEventPublisher extends TransactionSynchronizationAdapter
 {
     public final Producer producer;
+    public final Object event;
     
-    public PostTransactionEventPublisher(Producer producer)
+    public PostTransactionEventPublisher(Producer producer, Object event)
     {
         this.producer = producer;
+        this.event = event;
     }
 
     @Override
     public void afterCommit()
     {
-        producer.sendEvent(Event.FINISH_WORKING);
+        producer.sendEvent(event);
     }
 
 }

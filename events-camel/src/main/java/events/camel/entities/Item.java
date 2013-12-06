@@ -6,6 +6,7 @@ import java.util.Date;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
+import javax.persistence.Version;
 
 /**
  * Test entity for JPA, TX and event sync demo.
@@ -17,6 +18,8 @@ public class Item {
     @GeneratedValue
     @Id
     private Long id;
+    @Version
+    private Long version;
 	private StockItemType itemType;
 	private String name;
 	private String number;
@@ -40,6 +43,9 @@ public class Item {
     }
     public String getName() {
 		return name;
+	}
+    public void setName(String name) {
+		this.name = name ;
 	}
 	public String getNumber() {
 		return number;

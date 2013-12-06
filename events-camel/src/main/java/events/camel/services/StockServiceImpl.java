@@ -1,34 +1,28 @@
 package events.camel.services;
 
-import java.util.List;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
-import org.springframework.util.Assert;
 
 import events.camel.Producer;
 import events.camel.entities.Item;
-import events.camel.entities.StockItemType;
 import events.camel.repositories.PostTransactionEventPublisher;
 import events.camel.repositories.StockRepository;
-import events.common.Event;
 
 /**
  * Transactional service to demonstrate events after TX commit.
  * @author Anders Malmborg
  *
  */
-@Transactional
 public class StockServiceImpl implements StockService
 {
     
-    private static final String ITEM_NUMBER = "itemNumber";
     private static final Logger LOGGER = LoggerFactory.getLogger(StockServiceImpl.class);
     private final StockRepository stockRepository;
     private final Producer producer;
     private boolean isDone = false;
+    
     
     public StockServiceImpl(StockRepository stockRepository, Producer producer)
     {
@@ -36,33 +30,44 @@ public class StockServiceImpl implements StockService
         this.producer = producer;
     }
 
+    @Transactional
     @Override
-    public void saveAndProduce()
+    public void updateAndProduce(Item item, boolean withinTx)
     {
-        Item item = new Item(StockItemType.DRIVE, "driveName", ITEM_NUMBER, Double.valueOf(12.34));
+    	item.setName("updateAndProduce");
         stockRepository.save(item);
-        if (TransactionSynchronizationManager.isActualTransactionActive())
+        if (withinTx)
         {
-            TransactionSynchronizationManager.registerSynchronization(new PostTransactionEventPublisher(producer));
+	        producer.sendEvent(item.getId());
+	        try {
+	        	// Make sure to wait, to enable consumer to commit first
+				Thread.sleep(1000);
+			} catch (InterruptedException e) {
+				LOGGER.error("Interupted...", e);
+			}
         }
         else
         {
-            throw new RuntimeException("Transaction is expected to be active at this point");
+	        if (TransactionSynchronizationManager.isActualTransactionActive())
+	        {
+	            TransactionSynchronizationManager.registerSynchronization(new PostTransactionEventPublisher(producer, item.getId()));
+	        }
+	        else
+	        {
+	            throw new RuntimeException("Transaction is expected to be active at this point");
+	        }
         }
     }
     
+    @Transactional
     @Override
-    public void consumeAndRead(Event event)
+    public void consumeAndUpdate(Long id)
     {
-        LOGGER.info("Got event {}", event);
-        readItem();
-    }
-    
-    private void readItem()
-    {
-        List<Item> items = stockRepository.findByNumber(ITEM_NUMBER);
-        Assert.isTrue(items.size() > 0);
-        LOGGER.info("Read {}", items.get(0).toString());
+        LOGGER.info("Got id {}", id);
+        Item item = stockRepository.findOne(id);
+        LOGGER.info("Read {}", item.toString());
+        item.setName("consumeAndUpdate");
+        stockRepository.save(item);
         isDone = true;
     }
 

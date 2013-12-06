@@ -12,7 +12,9 @@ import events.camel.entities.Item;
 import events.camel.entities.StockItemType;
 import events.camel.repositories.StockRepository;
 
-@ContextConfiguration(locations="classpath:META-INF/jpa.spring.xml")
+//Load the same files here as in StockServiceTest to reuse spring context between the tests
+@ContextConfiguration(locations={"classpath:META-INF/jpa.spring.xml",
+                                "classpath:META-INF/service.spring.xml"})
 public class StockRepositoryTest extends AbstractTransactionalTestNGSpringContextTests
 {
     @Autowired

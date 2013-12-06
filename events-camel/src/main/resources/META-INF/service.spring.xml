@@ -23,7 +23,7 @@
       <camel:route>
          <camel:from uri="seda:consumer" />
          <!-- Due to seda runs in other thread -->
-         <camel:bean ref="service" method="consumeAndRead" />
+         <camel:bean ref="service" method="consumeAndUpdate" />
       </camel:route>
    </camel:camelContext>
 
