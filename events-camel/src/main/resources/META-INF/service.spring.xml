@@ -1,34 +1,53 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <beans xmlns="http://www.springframework.org/schema/beans"
-   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:camel="http://camel.apache.org/schema/spring"
-   xsi:schemaLocation="
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:camel="http://camel.apache.org/schema/spring"
+	xmlns:broker="http://activemq.apache.org/schema/core"
+	xsi:schemaLocation="
           http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
-          http://camel.apache.org/schema/spring http://camel.apache.org/schema/spring/camel-spring.xsd">
+          http://camel.apache.org/schema/spring http://camel.apache.org/schema/spring/camel-spring.xsd
+          http://activemq.apache.org/schema/core http://activemq.apache.org/schema/core/activemq-core.xsd">
 
-   <!-- Wrapper for a TemplateProducer -->
-   <bean id="producer" class="events.camel.Producer">
-      <constructor-arg>
-         <ref bean="producer.template" />
-      </constructor-arg>
-   </bean>
+	<!-- lets configure the ActiveMQ JMS broker server -->
+	<broker:broker useJmx="true" persistent="false"
+		brokerName="myBroker">
+		<broker:transportConnectors>
+			<!-- expose a VM transport for in-JVM transport between AMQ and Camel 
+				on the server side -->
+			<broker:transportConnector name="vm"
+				uri="vm://myBroker" />
+			<!-- expose a TCP transport for clients to use -->
+			<broker:transportConnector name="tcp"
+				uri="tcp://localhost:61610" />
+		</broker:transportConnectors>
+	</broker:broker>
 
-   <camel:camelContext id="camel.demo.service">
-      <camel:template defaultEndpoint="direct:producer"
-         id="producer.template" />
-      <!-- send to direct component, pass to seda consumer -->
-      <camel:route>
-         <camel:from uri="direct:producer" />
-         <camel:to uri="seda:consumer" />
-      </camel:route>
-      <camel:route>
-         <camel:from uri="seda:consumer" />
-         <!-- Due to seda runs in other thread -->
-         <camel:bean ref="service" method="consumeAndUpdate" />
-      </camel:route>
-   </camel:camelContext>
+	<bean id="jms" class="org.apache.activemq.camel.component.ActiveMQComponent">
+		<property name="brokerURL" value="vm://myBroker" />
+	</bean>
+	
+	<!-- Wrapper for a TemplateProducer -->
+	<bean id="producer" class="events.camel.Producer">
+		<constructor-arg>
+			<ref bean="producer.template" />
+		</constructor-arg>
+	</bean>
 
-   <bean id="service" class="events.camel.services.StockServiceImpl">
-      <constructor-arg ref="stockRepository" />
-      <constructor-arg ref="producer" />
-   </bean>
+	<camel:camelContext id="camel.demo.service">
+		<camel:template defaultEndpoint="direct:producer" id="producer.template" />
+		<!-- send to direct component, pass to seda consumer -->
+		<camel:route>
+			<camel:from uri="direct:producer" />
+			<camel:to uri="seda:consumer" />
+		</camel:route>
+		<camel:route>
+			<camel:from uri="seda:consumer" />
+			<!-- Due to seda runs in other thread -->
+			<camel:bean ref="service" method="consumeAndUpdate" />
+		</camel:route>
+	</camel:camelContext>
+
+	<bean id="service" class="events.camel.services.StockServiceImpl">
+		<constructor-arg ref="stockRepository" />
+		<constructor-arg ref="producer" />
+	</bean>
 </beans>
