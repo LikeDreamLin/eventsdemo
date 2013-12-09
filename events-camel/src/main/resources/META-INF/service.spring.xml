@@ -21,15 +21,6 @@
 		<property name="brokerURL" value="tcp://localhost:61610" />
 	</bean>
 	
-   <bean id="txRequired" class="org.apache.camel.spring.spi.SpringTransactionPolicy">
-        <property name="transactionManager" ref="transactionManager"/>
-        <property name="propagationBehaviorName" value="PROPAGATION_REQUIRED"/>
-   </bean>
-    
-<!--     <bean id="jms.txManager" class="org.springframework.jms.connection.JmsTransactionManager"> -->
-<!--         <property name="connectionFactory" ref="jmsFactory"/> -->
-<!--     </bean> -->
-    
 	<!-- Wrapper for a TemplateProducer -->
 	<bean id="producer" class="events.camel.Producer">
 		<constructor-arg>
