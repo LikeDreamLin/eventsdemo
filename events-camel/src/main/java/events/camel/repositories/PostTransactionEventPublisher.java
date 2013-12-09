@@ -3,7 +3,6 @@ package events.camel.repositories;
 import org.springframework.transaction.support.TransactionSynchronizationAdapter;
 
 import events.camel.Producer;
-import events.common.Event;
 
 /**
  * Sends an event after committed transaction.

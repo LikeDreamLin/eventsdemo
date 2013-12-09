@@ -1,5 +1,6 @@
 package events.camel.services;
 
+import org.apache.camel.ProducerTemplate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.transaction.annotation.Transactional;
@@ -21,13 +22,15 @@ public class StockServiceImpl implements StockService
     private static final Logger LOGGER = LoggerFactory.getLogger(StockServiceImpl.class);
     private final StockRepository stockRepository;
     private final Producer producer;
+    private final ProducerTemplate producerTemplate;
     private boolean isDone = false;
     
     
-    public StockServiceImpl(StockRepository stockRepository, Producer producer)
+    public StockServiceImpl(StockRepository stockRepository, Producer producer, ProducerTemplate producerTemplate)
     {
         this.stockRepository = stockRepository;
         this.producer = producer;
+        this.producerTemplate = producerTemplate;
     }
 
     @Transactional
@@ -76,4 +79,23 @@ public class StockServiceImpl implements StockService
     {
         return isDone;
     }
+
+    @Override
+    public void setDone(boolean isDone)
+    {
+        this.isDone = isDone;
+    }
+
+    @Transactional(rollbackFor=RuntimeException.class)
+    @Override
+    public void sendToJms(Item item, boolean commit)
+    {
+        producerTemplate.sendBody("activemq:queue:itemQ", item.getId());
+        if (!commit)
+        {
+            throw new RuntimeException("Will rollback");
+        }
+    }
+    
+    
 }

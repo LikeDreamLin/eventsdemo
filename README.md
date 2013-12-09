@@ -29,6 +29,7 @@ As Camel was defined to be used for Event Handling further examples have been ad
 * Sending between Camel contexts using the vm component (seda only within a Camel context)
 * Routing using RoutingSlip 
 * Sending after transaction commit using Springs TransactionSynchronizationAdapter.
+* Distributed transactions between DB(H2), Camel and ActiveMQ using Bitronix.
 
 
 
