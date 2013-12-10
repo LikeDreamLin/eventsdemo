@@ -21,6 +21,10 @@ public class CamelEventSpringTest extends AbstractTestNGSpringContextTests
 {
     @Autowired 
     private Producer producer;
+
+    @Autowired
+    @Qualifier("producer.simpleTemplate")
+    private ProducerTemplate simpleProducerTemplate;
     
     @Autowired
     @Qualifier("producer.template")
@@ -46,6 +50,28 @@ public class CamelEventSpringTest extends AbstractTestNGSpringContextTests
     @Qualifier("vehicleConsumer")
     private PoJoConsumer vehicleConsumer;
 
+    /**
+     * Simple example as in PojoConsumerTest
+     */
+    @Test
+    public void syncEvent()
+    {
+        simpleProducerTemplate.setDefaultEndpointUri("direct:event");
+        assertEquals(simpleProducerTemplate.requestBody(Event.START_WORKING), Event.START_WORKING);
+        assertEquals(simpleProducerTemplate.requestBody(Event.FINISH_WORKING), Event.FINISH_WORKING);
+    }
+    
+    /**
+     * Check if there is no problem as there is nobody on the other side: direct is connected with seda without
+     * listeners.
+     */
+    @Test
+    public void fireForgetEvent()
+    {
+        simpleProducerTemplate.setDefaultEndpointUri("direct:event");
+        simpleProducerTemplate.sendBody(Event.START_WORKING);
+    }
+    
     /**
      * Set thread local tenant value, to verify the threading behavior, the tenant is post-fixed by the thread name,
      * i.e. 'main'.

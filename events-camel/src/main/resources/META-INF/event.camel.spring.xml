@@ -5,6 +5,16 @@
           http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
           http://camel.apache.org/schema/spring http://camel.apache.org/schema/spring/camel-spring.xsd">
 
+
+    <!-- Simplest possible camel context, analog to the Java variant in PojoConsumerTest -->
+    <camel:camelContext id="camel.simple.demo">
+        <camel:route>
+            <camel:from uri="direct:event"/>
+            <camel:bean ref="consumer1"/>
+        </camel:route>
+    </camel:camelContext>
+    <camel:template id="producer.simpleTemplate"/>
+    
    <!-- Two consumers to act in publish/subscribe test -->
    <bean id="consumer1" class="events.camel.PoJoConsumer" />
    <bean id="consumer2" class="events.camel.PoJoConsumer" />
@@ -25,8 +35,8 @@
    <bean id="headerEnricher" class="events.camel.HeaderEnricher" />
    <bean id="headerProducer" class="events.camel.HeaderProducer" />
 
-      <camel:template defaultEndpoint="direct:producer"
-         id="producer.template" camelContextId="camel.demo"/>
+   <camel:template defaultEndpoint="direct:producer" id="producer.template"
+      camelContextId="camel.demo" />
    <camel:camelContext id="camel.demo">
       <!-- send to direct component, add tenant to header, pass to multiple 
          seda consumers -->
@@ -78,11 +88,11 @@
          <camel:bean ref="headerProducer" />
          <camel:bean ref="consumer3" method="handleEvent" />
       </camel:route>
-<!--       <camel:route> -->
-<!--          <camel:from uri="vm:consumer" /> -->
-<!--          <camel:bean ref="headerProducer" /> -->
-<!--          <camel:bean ref="service" method="consumeAndSave" /> -->
-<!--       </camel:route> -->
+      <!-- <camel:route> -->
+      <!-- <camel:from uri="vm:consumer" /> -->
+      <!-- <camel:bean ref="headerProducer" /> -->
+      <!-- <camel:bean ref="service" method="consumeAndSave" /> -->
+      <!-- </camel:route> -->
    </camel:camelContext>
 
 </beans>

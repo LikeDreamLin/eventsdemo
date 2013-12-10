@@ -14,7 +14,6 @@ import events.common.Event;
 public class PojoConsumerTest
 {
     private static final String DIRECT = "direct:event";
-    private static final String CHANNEL = "seda:inEvents";
     private CamelContext ctx;
     
     @BeforeClass
@@ -26,8 +25,7 @@ public class PojoConsumerTest
             @Override
             public void configure() throws Exception
             {
-                from(CHANNEL).bean(PoJoConsumer.class);
-                from(DIRECT).to("seda:noListeners?multipleConsumers=true");
+                from(DIRECT).bean(PoJoConsumer.class);
             }
         });
         ctx.start();
@@ -37,7 +35,7 @@ public class PojoConsumerTest
     public void syncEvent()
     {
         ProducerTemplate producerTemplate = ctx.createProducerTemplate();
-        producerTemplate.setDefaultEndpointUri(CHANNEL);
+        producerTemplate.setDefaultEndpointUri(DIRECT);
         assertEquals(producerTemplate.requestBody(Event.START_WORKING), Event.START_WORKING);
         assertEquals(producerTemplate.requestBody(Event.FINISH_WORKING), Event.FINISH_WORKING);
     }
