@@ -24,6 +24,7 @@ public class StockServiceImpl implements StockService
     private final Producer producer;
     private final ProducerTemplate producerTemplate;
     private boolean isDone = false;
+    public static int consumerCalls = 0;
     
     
     public StockServiceImpl(StockRepository stockRepository, Producer producer, ProducerTemplate producerTemplate)
@@ -72,6 +73,17 @@ public class StockServiceImpl implements StockService
         item.setName("consumeAndUpdate");
         stockRepository.save(item);
         isDone = true;
+        consumerCalls++;
+    }
+
+    @Override
+    public void consume(Long id)
+    {
+        LOGGER.info("Got id {}", id);
+        Item item = stockRepository.findOne(id);
+        LOGGER.info("Read {}", item.toString());
+        isDone = true;
+        consumerCalls++;
     }
 
     @Override
@@ -81,16 +93,21 @@ public class StockServiceImpl implements StockService
     }
 
     @Override
-    public void setDone(boolean isDone)
+    public void resetDone()
     {
-        this.isDone = isDone;
+        isDone = false;
+    }
+
+    public static void resetConsumerCalls()
+    {
+        consumerCalls = 0;
     }
 
     @Transactional(rollbackFor=RuntimeException.class)
     @Override
-    public void sendToJms(Item item, boolean commit)
+    public void sendToJms(String endPoint, Item item, boolean commit)
     {
-        producerTemplate.sendBody("activemq:queue:itemQ", item.getId());
+        producerTemplate.sendBody(endPoint, item.getId());
         if (!commit)
         {
             throw new RuntimeException("Will rollback");

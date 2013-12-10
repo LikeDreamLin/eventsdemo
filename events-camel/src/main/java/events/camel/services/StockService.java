@@ -24,23 +24,29 @@ public interface StockService
     void consumeAndUpdate(Long id);
     
     /**
+     * Receives an event and reads the item from db.
+     * @param id primary key of Item to update
+     */
+    void consume(Long id);
+
+    /**
      * @return true if consumeAndUpdate is performed
      */
     boolean isDone();
     
     /**
-     * (Re)set the the done attribute. 
-     * @param isDone true/false
+     * Reset the the done attribute. 
      */
-    void setDone(boolean isDone);
+    void resetDone();
 
     
     /**
      * Sends an async message over Jms.
+     * @param endPoint to send to, e.g. "jms:queue:someQueue"
      * @param item Item to send
      * @param commit true to commit, false rollback
      */
-    void sendToJms(Item item, boolean commit);
+    void sendToJms(String endPoint, Item item, boolean commit);
 
 
 }

@@ -1,6 +1,7 @@
 package events.camel.services;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.testng.AbstractTestNGSpringContextTests;
 import org.springframework.transaction.UnexpectedRollbackException;
@@ -16,17 +17,22 @@ import events.camel.repositories.StockRepository;
 @ContextConfiguration(locations = { "classpath:META-INF/jpa.spring.xml",
 		"classpath:META-INF/service.spring.xml" })
 public class StockServiceTest extends AbstractTestNGSpringContextTests {
-	@Autowired
+	private static final String TOPIC = "jms:topic:moreConsumers";
+    private static final String QUEUE = "activemq:queue:itemQ";
+    @Autowired
+    @Qualifier("service")
 	private StockService target;
 	@Autowired
 	private StockRepository stockRepository;
+
 
 	private static final String ITEM_NUMBER = "itemNumber";
 
 	@BeforeMethod
 	public void beforeMethod()
 	{
-	    target.setDone(false);
+	    target.resetDone();
+	    StockServiceImpl.resetConsumerCalls();
 	}
 	
 	@Test(dataProvider="createItem", expectedExceptions=UnexpectedRollbackException.class)
@@ -48,12 +54,13 @@ public class StockServiceTest extends AbstractTestNGSpringContextTests {
         }
         Assert.assertTrue(target.isDone());
         Assert.assertEquals(stockRepository.findOne(item.getId()).getName(),  "consumeAndUpdate");
+        Assert.assertEquals(StockServiceImpl.consumerCalls, 1);
     }
 	
     @Test(dataProvider="createItem")
 	public void sendToJmsCommit(Item item) throws InterruptedException
 	{
-	    target.sendToJms(item, true);
+	    target.sendToJms(QUEUE, item, true);
         int i = 3;
         while(!target.isDone() && i >= 0)
         {
@@ -62,6 +69,7 @@ public class StockServiceTest extends AbstractTestNGSpringContextTests {
         }
         Assert.assertTrue(target.isDone());
         Assert.assertEquals(stockRepository.findOne(item.getId()).getName(),  "consumeAndUpdate");
+        Assert.assertEquals(StockServiceImpl.consumerCalls, 1);
 	}
 	
 	/**
@@ -73,7 +81,7 @@ public class StockServiceTest extends AbstractTestNGSpringContextTests {
     {
         try
         {
-            target.sendToJms(item, false);
+            target.sendToJms(QUEUE, item, false);
             Assert.assertTrue(false, "should not get here");
         }
         catch (RuntimeException e)
@@ -88,8 +96,25 @@ public class StockServiceTest extends AbstractTestNGSpringContextTests {
         }
         Assert.assertFalse(target.isDone());
         Assert.assertEquals(stockRepository.findOne(item.getId()).getName(),  "driveName");
+        Assert.assertEquals(StockServiceImpl.consumerCalls, 0);
+
     }
 
+    @Test(dataProvider="createItem")
+    public void jmsPublishToMore(Item item) throws InterruptedException
+    {
+        target.sendToJms(TOPIC, item, true);
+        int i = 3;
+        while(!target.isDone() && i >= 0)
+        {
+            i--;
+            Thread.sleep(500);
+        }
+        Assert.assertTrue(target.isDone());
+        Assert.assertEquals(stockRepository.findOne(item.getId()).getName(),  "consumeAndUpdate");
+        Assert.assertEquals(StockServiceImpl.consumerCalls, 2);
+    }
+    
     @DataProvider
 	private Object[][] createItem()
 	{
