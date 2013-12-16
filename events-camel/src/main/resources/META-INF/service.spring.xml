@@ -9,7 +9,7 @@
 
    <!-- Embedded ActiveMQ JMS broker server -->
    <broker:broker useJmx="true" persistent="false"
-      brokerName="localhost">
+      brokerName="localhost" useShutdownHook="false">
       <broker:transportConnectors>
          <broker:transportConnector name="tcp"
             uri="tcp://localhost:61610" />
@@ -42,29 +42,77 @@
       <camel:route>
          <camel:from uri="seda:consumer" />
          <!-- Due to seda runs in other thread -->
-         <camel:bean ref="service" method="consumeAndUpdate" />
+         <camel:bean ref="stockService" method="consumeAndUpdate" />
       </camel:route>
       <camel:route>
          <camel:from uri="activemq:queue:itemQ" />
          <camel:transacted />
-         <camel:bean ref="service" method="consumeAndUpdate" />
+         <camel:bean ref="stockService" method="consumeAndUpdate" />
       </camel:route>
       <camel:route>
          <camel:from uri="jms:topic:moreConsumers" />
-         <camel:bean ref="service" method="consumeAndUpdate" />
+         <camel:bean ref="stockService" method="consumeAndUpdate" />
       </camel:route>
       <camel:route>
          <camel:from uri="jms:topic:moreConsumers" />
-         <camel:bean ref="anotherService" method="consume" />
+         <camel:bean ref="anotherStockService" method="consume" />
+      </camel:route>
+      <!-- Send a message to consumers that should vote if it is OK to delete 
+         the item -->
+      <camel:route>
+         <camel:from uri="seda:deleteVotersDeny?multipleConsumers=true" />
+         <camel:bean ref="denyVoter" />
+         <camel:to uri="seda:deleteAggregator" />
+      </camel:route>
+      <camel:route>
+         <camel:from uri="seda:deleteVotersDeny?multipleConsumers=true" />
+         <camel:bean ref="acceptVoter1" />
+         <camel:to uri="seda:deleteAggregator" />
+      </camel:route>
+      <camel:route>
+         <camel:from uri="seda:deleteVotersAccept?multipleConsumers=true" />
+         <camel:bean ref="acceptVoter1" />
+         <camel:to uri="seda:deleteAggregator" />
+      </camel:route>
+      <camel:route>
+         <camel:from uri="seda:deleteVotersAccept?multipleConsumers=true" />
+         <camel:bean ref="acceptVoter2" />
+         <camel:to uri="seda:deleteAggregator" />
+      </camel:route>
+      <camel:route>
+         <camel:from uri="seda:deleteAggregator" />
+         <camel:aggregate strategyRef="deleteVoterAggregator"
+            completionTimeout="1000">
+            <camel:correlationExpression>
+               <camel:header>itemId</camel:header>
+            </camel:correlationExpression>
+            <camel:bean ref="deleteDecission" />
+         </camel:aggregate>
       </camel:route>
    </camel:camelContext>
 
-   <bean id="service" class="events.camel.services.StockServiceImpl">
+   <!-- Voter consumers for deleting item -->
+   <bean id="acceptVoter1" class="events.camel.services.ItemDeleteVoter">
+      <constructor-arg value="true" />
+   </bean>
+   <bean id="acceptVoter2" class="events.camel.services.ItemDeleteVoter">
+      <constructor-arg value="true" />
+   </bean>
+   <bean id="denyVoter" class="events.camel.services.ItemDeleteVoter">
+      <constructor-arg value="false" />
+   </bean>
+   <bean id="deleteVoterAggregator" class="events.camel.services.DeleteVoterAggregator" />
+   <bean id="deleteDecission" class="events.camel.services.DeleteVoterDecission"
+      scope="prototype">
+      <constructor-arg ref="stockService" />
+   </bean>
+
+   <bean id="stockService" class="events.camel.services.StockServiceImpl">
       <constructor-arg ref="stockRepository" />
       <constructor-arg ref="producer" />
       <constructor-arg ref="producer.template" />
    </bean>
-   <bean id="anotherService" class="events.camel.services.StockServiceImpl">
+   <bean id="anotherStockService" class="events.camel.services.StockServiceImpl">
       <constructor-arg ref="stockRepository" />
       <constructor-arg ref="producer" />
       <constructor-arg ref="producer.template" />

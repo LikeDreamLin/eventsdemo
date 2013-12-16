@@ -47,6 +47,24 @@ public interface StockService
      * @param commit true to commit, false rollback
      */
     void sendToJms(String endPoint, Item item, boolean commit);
-
+    
+    /**
+     * Sends messages to all registered consumers awaiting a voting on the event, e.g. can the item be deleted.
+     * @param endPoint to send to, e.g. "seda:deleteVotersAccept?multipleConsumers=true"
+     * @param item Item
+     */
+    void canItemBeDeleted(String endPoint, Item item);
+    
+    /**
+     * Sets the ok to delete flag, called from DeleteVoterDecission.
+     */
+    void setOkToDeleteItem(Long id, boolean ok);
+    
+    /**
+     * Gets the result of {@link #canItemBeDeleted(String, Item)}
+     * @param id
+     * @return
+     */
+    boolean isOkToDeleteItem(Long id);
 
 }

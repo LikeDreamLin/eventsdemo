@@ -1,5 +1,8 @@
 package events.camel.services;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import org.apache.camel.ProducerTemplate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -24,6 +27,7 @@ public class StockServiceImpl implements StockService
     private final Producer producer;
     private final ProducerTemplate producerTemplate;
     private boolean isDone = false;
+    private final Map<Long, Boolean> okToDeleteMap;
     public static int consumerCalls = 0;
     
     
@@ -32,6 +36,7 @@ public class StockServiceImpl implements StockService
         this.stockRepository = stockRepository;
         this.producer = producer;
         this.producerTemplate = producerTemplate;
+        okToDeleteMap = new HashMap<Long, Boolean>();
     }
 
     @Transactional
@@ -112,6 +117,26 @@ public class StockServiceImpl implements StockService
         {
             throw new RuntimeException("Will rollback");
         }
+    }
+
+    @Override
+    public void canItemBeDeleted(String endPoint, Item item)
+    {
+        producerTemplate.sendBodyAndHeader(endPoint, item, "itemId", item.getId());
+    }
+
+    @Override
+    public void setOkToDeleteItem(Long id, boolean ok)
+    {
+        okToDeleteMap.put(id, ok);
+    }
+
+    @Override
+    public boolean isOkToDeleteItem(Long id)
+    {
+        if (okToDeleteMap.containsKey(id))
+            return okToDeleteMap.get(id);
+        return false;
     }
     
     

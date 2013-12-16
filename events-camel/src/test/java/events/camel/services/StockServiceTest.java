@@ -1,5 +1,9 @@
 package events.camel.services;
 
+import static org.testng.Assert.assertEquals;
+import static org.testng.Assert.assertTrue;
+import static org.testng.Assert.assertFalse;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.test.context.ContextConfiguration;
@@ -20,7 +24,7 @@ public class StockServiceTest extends AbstractTestNGSpringContextTests {
 	private static final String TOPIC = "jms:topic:moreConsumers";
     private static final String QUEUE = "activemq:queue:itemQ";
     @Autowired
-    @Qualifier("service")
+    @Qualifier("stockService")
 	private StockService target;
 	@Autowired
 	private StockRepository stockRepository;
@@ -94,9 +98,9 @@ public class StockServiceTest extends AbstractTestNGSpringContextTests {
             i--;
             Thread.sleep(500);
         }
-        Assert.assertFalse(target.isDone());
-        Assert.assertEquals(stockRepository.findOne(item.getId()).getName(),  "driveName");
-        Assert.assertEquals(StockServiceImpl.consumerCalls, 0);
+        assertFalse(target.isDone());
+        assertEquals(stockRepository.findOne(item.getId()).getName(),  "driveName");
+        assertEquals(StockServiceImpl.consumerCalls, 0);
 
     }
 
@@ -110,11 +114,44 @@ public class StockServiceTest extends AbstractTestNGSpringContextTests {
             i--;
             Thread.sleep(500);
         }
-        Assert.assertTrue(target.isDone());
-        Assert.assertEquals(stockRepository.findOne(item.getId()).getName(),  "consumeAndUpdate");
-        Assert.assertEquals(StockServiceImpl.consumerCalls, 2);
+        assertTrue(target.isDone());
+        assertEquals(stockRepository.findOne(item.getId()).getName(),  "consumeAndUpdate");
+        assertEquals(StockServiceImpl.consumerCalls, 2);
     }
     
+    /**
+     * Send a message containing the item and receive an consolidated answer which should be true here.
+     * @param item the Item to delete
+     * @throws InterruptedException 
+     */
+    @Test(dataProvider="createItem")
+    public void voteForDeleteTrue(Item item) throws InterruptedException
+    {
+        target.setOkToDeleteItem(item.getId(), false);
+        target.canItemBeDeleted("seda:deleteVotersAccept?multipleConsumers=true", item);
+        int i = 3;
+        while(!target.isDone() && i >= 0)
+        {
+            i--;
+            Thread.sleep(1000);
+        }
+        assertTrue(target.isOkToDeleteItem(item.getId()));
+    }
+    
+    @Test(dataProvider="createItem")
+    public void voteForDeleteFalse(Item item) throws InterruptedException
+    {
+        target.setOkToDeleteItem(item.getId(), true);
+        target.canItemBeDeleted("seda:deleteVotersDeny?multipleConsumers=true", item);
+        int i = 3;
+        while(!target.isDone() && i >= 0)
+        {
+            i--;
+            Thread.sleep(1000);
+        }
+        assertFalse(target.isOkToDeleteItem(item.getId()));
+    }
+
     @DataProvider
 	private Object[][] createItem()
 	{
