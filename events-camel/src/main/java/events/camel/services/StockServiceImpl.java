@@ -129,6 +129,7 @@ public class StockServiceImpl implements StockService
     public void setOkToDeleteItem(Long id, boolean ok)
     {
         okToDeleteMap.put(id, ok);
+        isDone();
     }
 
     @Override
@@ -138,6 +139,5 @@ public class StockServiceImpl implements StockService
             return okToDeleteMap.get(id);
         return false;
     }
-    
-    
+
 }

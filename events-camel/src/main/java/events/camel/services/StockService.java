@@ -49,7 +49,8 @@ public interface StockService
     void sendToJms(String endPoint, Item item, boolean commit);
     
     /**
-     * Sends messages to all registered consumers awaiting a voting on the event, e.g. can the item be deleted.
+     * Sends messages to all registered consumers for voting on the event, e.g. can the item be deleted.
+     * Response it aggregated and providede to DeleteVoterDecission.
      * @param endPoint to send to, e.g. "seda:deleteVotersAccept?multipleConsumers=true"
      * @param item Item
      */
@@ -61,7 +62,7 @@ public interface StockService
     void setOkToDeleteItem(Long id, boolean ok);
     
     /**
-     * Gets the result of {@link #canItemBeDeleted(String, Item)}
+     * Gets the result of {@link #canItemBeDeletedAsync(String, Item)}
      * @param id
      * @return
      */
