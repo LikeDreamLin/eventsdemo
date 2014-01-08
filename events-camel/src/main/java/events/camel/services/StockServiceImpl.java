@@ -16,12 +16,12 @@ import events.camel.repositories.StockRepository;
 
 /**
  * Transactional service to demonstrate events after TX commit.
+ * 
  * @author Anders Malmborg
- *
  */
 public class StockServiceImpl implements StockService
 {
-    
+
     private static final Logger LOGGER = LoggerFactory.getLogger(StockServiceImpl.class);
     private final StockRepository stockRepository;
     private final Producer producer;
@@ -29,8 +29,7 @@ public class StockServiceImpl implements StockService
     private boolean isDone = false;
     private final Map<Long, Boolean> okToDeleteMap;
     public static int consumerCalls = 0;
-    
-    
+
     public StockServiceImpl(StockRepository stockRepository, Producer producer, ProducerTemplate producerTemplate)
     {
         this.stockRepository = stockRepository;
@@ -43,31 +42,35 @@ public class StockServiceImpl implements StockService
     @Override
     public void updateAndProduce(Item item, boolean withinTx)
     {
-    	item.setName("updateAndProduce");
+        item.setName("updateAndProduce");
         stockRepository.save(item);
         if (withinTx)
         {
-	        producer.sendEvent(item.getId());
-	        try {
-	        	// Make sure to wait, to enable consumer to commit first
-				Thread.sleep(1000);
-			} catch (InterruptedException e) {
-				LOGGER.error("Interupted...", e);
-			}
+            producer.sendEvent(item.getId());
+            try
+            {
+                // Make sure to wait, to enable consumer to commit first
+                Thread.sleep(1000);
+            }
+            catch (InterruptedException e)
+            {
+                LOGGER.error("Interupted...", e);
+            }
         }
         else
         {
-	        if (TransactionSynchronizationManager.isActualTransactionActive())
-	        {
-	            TransactionSynchronizationManager.registerSynchronization(new PostTransactionEventPublisher(producer, item.getId()));
-	        }
-	        else
-	        {
-	            throw new RuntimeException("Transaction is expected to be active at this point");
-	        }
+            if (TransactionSynchronizationManager.isActualTransactionActive())
+            {
+                TransactionSynchronizationManager.registerSynchronization(new PostTransactionEventPublisher(producer,
+                    item.getId()));
+            }
+            else
+            {
+                throw new RuntimeException("Transaction is expected to be active at this point");
+            }
         }
     }
-    
+
     @Transactional
     @Override
     public void consumeAndUpdate(Long id)
@@ -108,7 +111,7 @@ public class StockServiceImpl implements StockService
         consumerCalls = 0;
     }
 
-    @Transactional(rollbackFor=RuntimeException.class)
+    @Transactional(rollbackFor = RuntimeException.class)
     @Override
     public void sendToJms(String endPoint, Item item, boolean commit)
     {
@@ -126,10 +129,15 @@ public class StockServiceImpl implements StockService
     }
 
     @Override
+    public Boolean canItemBeDeletedMulticast(String endPoint, Item item)
+    {
+        return producerTemplate.requestBodyAndHeader(endPoint, item, "itemId", item.getId(), Boolean.class);
+    }
+
+    @Override
     public void setOkToDeleteItem(Long id, boolean ok)
     {
         okToDeleteMap.put(id, ok);
-        isDone();
     }
 
     @Override
