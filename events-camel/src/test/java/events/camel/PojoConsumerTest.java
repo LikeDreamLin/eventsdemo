@@ -39,16 +39,4 @@ public class PojoConsumerTest
         assertEquals(producerTemplate.requestBody(Event.START_WORKING), Event.START_WORKING);
         assertEquals(producerTemplate.requestBody(Event.FINISH_WORKING), Event.FINISH_WORKING);
     }
-    
-    /**
-     * Check if there is no problem as there is nobody on the other side: direct is connected with seda without
-     * listeners.
-     */
-    @Test
-    public void fireForgetEvent()
-    {
-        ProducerTemplate producerTemplate = ctx.createProducerTemplate();
-        producerTemplate.setDefaultEndpointUri(DIRECT);
-        producerTemplate.sendBody(Event.START_WORKING);
-    }
 }
