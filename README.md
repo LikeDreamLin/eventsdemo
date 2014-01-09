@@ -31,6 +31,7 @@ As Camel was defined to be used for Event Handling further examples have been ad
 * Sending after transaction commit using Springs TransactionSynchronizationAdapter.
 * Distributed transactions between DB(H2), Camel and ActiveMQ using Bitronix.
 * Scatter/Gather example (delete or not to delete - that is the question).
+* Camel Proxy to entirely hide Camel from producer and consumer.
 
 
 
