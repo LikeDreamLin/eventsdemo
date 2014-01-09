@@ -25,7 +25,7 @@ public class PojoConsumerTest
             @Override
             public void configure() throws Exception
             {
-                from(DIRECT).bean(PoJoConsumer.class);
+                from(DIRECT).bean(new PoJoConsumer("1"));
             }
         });
         ctx.start();

@@ -49,7 +49,7 @@ public class CamelEventSpringTest extends AbstractTestNGSpringContextTests
     @Autowired
     @Qualifier("vehicleConsumer")
     private PoJoConsumer vehicleConsumer;
-
+    
     /**
      * Simple example as in PojoConsumerTest
      */
@@ -100,6 +100,14 @@ public class CamelEventSpringTest extends AbstractTestNGSpringContextTests
         producerTemplate.sendBodyAndHeader("direct:routingSlip", Event.FINISH_WORKING, "routingSlip", "direct:vehicle");
         assertEquals(businessPartnerConsumer.lastEvent, Event.START_WORKING);
         assertEquals(vehicleConsumer.lastEvent, Event.FINISH_WORKING);
+    }
+    
+    @Test
+    public void proxy()
+    {
+        HelloService helloService = applicationContext.getBean("helloProxy", HelloService.class);
+
+        assertEquals(helloService.hi("test"), "hi test");
     }
 
 }

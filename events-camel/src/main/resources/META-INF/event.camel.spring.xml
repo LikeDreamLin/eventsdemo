@@ -6,22 +6,30 @@
           http://camel.apache.org/schema/spring http://camel.apache.org/schema/spring/camel-spring.xsd">
 
 
-    <!-- Simplest possible camel context, analog to the Java variant in PojoConsumerTest -->
-    <camel:camelContext id="camel.simple.demo">
-        <camel:route>
-            <camel:from uri="direct:event"/>
-            <camel:bean ref="consumer1"/>
-        </camel:route>
-    </camel:camelContext>
-    <camel:template id="producer.simpleTemplate"/>
-    
+   <!-- Simplest possible camel context, analog to the Java variant in PojoConsumerTest -->
+   <camel:camelContext id="camel.simple.demo">
+      <camel:route>
+         <camel:from uri="direct:event" />
+         <camel:bean ref="consumer1" />
+      </camel:route>
+   </camel:camelContext>
+   <camel:template id="producer.simpleTemplate" />
+
    <!-- Two consumers to act in publish/subscribe test -->
-   <bean id="consumer1" class="events.camel.PoJoConsumer" />
-   <bean id="consumer2" class="events.camel.PoJoConsumer" />
+   <bean id="consumer1" class="events.camel.PoJoConsumer">
+      <constructor-arg name="id" value="1" />
+   </bean>
+   <bean id="consumer2" class="events.camel.PoJoConsumer">
+      <constructor-arg name="id" value="2" />
+   </bean>
 
    <!-- Businesspartner and VehicleConsumer for routingSlip test -->
-   <bean id="businessPartnerConsumer" class="events.camel.PoJoConsumer" />
-   <bean id="vehicleConsumer" class="events.camel.PoJoConsumer" />
+   <bean id="businessPartnerConsumer" class="events.camel.PoJoConsumer">
+      <constructor-arg name="id" value="businessPartnerConsumer" />
+   </bean>
+   <bean id="vehicleConsumer" class="events.camel.PoJoConsumer">
+      <constructor-arg name="id" value="vehicleConsumer" />
+   </bean>
 
    <!-- Wrapper for a TemplateProducer -->
    <bean id="producer" class="events.camel.Producer">
@@ -29,6 +37,9 @@
          <ref bean="producer.template" />
       </constructor-arg>
    </bean>
+
+   <!-- HelloService being proxied -->
+   <bean id="helloService" class="events.camel.HelloServiceImpl" />
 
    <!-- Extract a thread locale tenant at producer side, set it on consumer 
       side -->
@@ -38,6 +49,10 @@
    <camel:template defaultEndpoint="direct:producer" id="producer.template"
       camelContextId="camel.demo" />
    <camel:camelContext id="camel.demo">
+      <!-- Proxing a service -->
+      <camel:proxy id="helloProxy" serviceInterface="events.camel.HelloService"
+         serviceUrl="direct:helloProxy" />
+      <camel:export id="hello" uri="direct:helloProxy" serviceRef="helloService" serviceInterface="events.camel.HelloService"/>
       <!-- send to direct component, add tenant to header, pass to multiple 
          seda consumers -->
       <camel:route>
@@ -81,7 +96,9 @@
    </camel:camelContext>
 
    <!-- Another consumer in other camel context -->
-   <bean id="consumer3" class="events.camel.PoJoConsumer" />
+   <bean id="consumer3" class="events.camel.PoJoConsumer">
+      <constructor-arg name="id" value="3" />
+   </bean>
    <camel:camelContext id="camel.demo.2">
       <camel:route>
          <camel:from uri="vm:consumer" />

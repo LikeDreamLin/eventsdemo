@@ -151,7 +151,7 @@ public class StockServiceTest extends AbstractTestNGSpringContextTests {
         }
         assertFalse(target.isOkToDeleteItem(item.getId()));
     }
-
+    
     @DataProvider
 	private Object[][] createItem()
 	{
