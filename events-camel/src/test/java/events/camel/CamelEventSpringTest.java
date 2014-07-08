@@ -12,7 +12,7 @@ import org.testng.annotations.Test;
 import events.common.Event;
 
 /**
- * Tests camel wiring.
+ * Tests camel event with Spring DSL.
  * @author Anders Malmborg
  *
  */

@@ -10,17 +10,17 @@
 
 	<jpa:repositories base-package="events.camel.repositories"></jpa:repositories>
 
-<!-- 	<bean id="dataSource" -->
-<!-- 		class="org.springframework.jdbc.datasource.DriverManagerDataSource"> -->
-<!-- 		<property name="driverClassName" value="org.h2.Driver" /> -->
-<!-- 		<property name="url" value="jdbc:h2:target/mem" /> -->
-<!-- 		<property name="username" value="sa" /> -->
-<!-- 		<property name="password" value="" /> -->
-<!-- 	</bean> -->
+	<!-- <bean id="dataSource" -->
+	<!-- class="org.springframework.jdbc.datasource.DriverManagerDataSource"> -->
+	<!-- <property name="driverClassName" value="org.h2.Driver" /> -->
+	<!-- <property name="url" value="jdbc:h2:target/mem" /> -->
+	<!-- <property name="username" value="sa" /> -->
+	<!-- <property name="password" value="" /> -->
+	<!-- </bean> -->
 
 	<bean id="dataSource" class="bitronix.tm.resource.jdbc.PoolingDataSource"
 		init-method="init" destroy-method="close">
-		<property name="uniqueName" value="dataSource"/>
+		<property name="uniqueName" value="dataSource" />
 		<property name="className" value="org.h2.jdbcx.JdbcDataSource" />
 		<property name="minPoolSize" value="1" />
 		<property name="maxPoolSize" value="5" />
@@ -35,30 +35,36 @@
 	</bean>
 
 	<bean id="myEmf"
-		class="org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean" depends-on="transactionManager">
+		class="org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean"
+		depends-on="transactionManager" destroy-method="destroy">
 		<property name="dataSource" ref="dataSource" />
 		<property name="packagesToScan" value="events.camel.entities" />
 		<property name="jpaVendorAdapter">
 			<bean class="org.springframework.orm.jpa.vendor.HibernateJpaVendorAdapter" />
 		</property>
-		<property name="persistenceUnitName" value="camel.event.PU"/>
+		<property name="persistenceUnitName" value="camel.event.PU" />
 	</bean>
 
 
-<!-- 	<bean id="transactionManager" class="org.springframework.orm.jpa.JpaTransactionManager"> -->
-<!-- 		<property name="entityManagerFactory" ref="myEmf" /> -->
-<!-- 	</bean> -->
+	<!-- <bean id="transactionManager" class="org.springframework.orm.jpa.JpaTransactionManager"> -->
+	<!-- <property name="entityManagerFactory" ref="myEmf" /> -->
+	<!-- </bean> -->
+	<bean id="bitrinx.config" factory-method="getConfiguration"
+		class="bitronix.tm.TransactionManagerServices">
+		<property name="serverId" value="spring-btm" />
+	</bean>
 
-    <!-- create BTM transaction manager -->
-    <bean id="bitronix.TransactionManager" factory-method="getTransactionManager"
-        class="bitronix.tm.TransactionManagerServices" destroy-method="shutdown"/>
+	<!-- create BTM transaction manager -->
+	<bean id="bitronix.TransactionManager" factory-method="getTransactionManager"
+		class="bitronix.tm.TransactionManagerServices" destroy-method="shutdown" depends-on="bitrinx.config"/>
 
-    <!-- Spring JtaTransactionManager -->
-    <bean id="transactionManager" class="org.springframework.transaction.jta.JtaTransactionManager"
-        depends-on="bitronix.TransactionManager">
-        <property name="transactionManager" ref="bitronix.TransactionManager" />
-        <property name="userTransaction" ref="bitronix.TransactionManager" />
-    </bean>
+	<!-- Spring JtaTransactionManager -->
+	<bean id="transactionManager"
+		class="org.springframework.transaction.jta.JtaTransactionManager"
+		depends-on="bitronix.TransactionManager">
+		<property name="transactionManager" ref="bitronix.TransactionManager" />
+		<property name="userTransaction" ref="bitronix.TransactionManager" />
+	</bean>
 
 	<tx:annotation-driven />
 

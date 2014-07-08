@@ -31,4 +31,9 @@ public class PoJoConsumer
         tenant = TenantHolder.getTenant();
         return event;
     }
+    
+    public Event getLastEvent()
+    {
+        return lastEvent;
+    }
 }

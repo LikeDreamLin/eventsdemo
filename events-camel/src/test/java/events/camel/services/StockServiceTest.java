@@ -18,7 +18,8 @@ import org.testng.annotations.Test;
 import static org.testng.Assert.*;
 
 @ContextConfiguration(locations = {"classpath:META-INF/jpa.spring.xml",
-        "classpath:META-INF/service.spring.xml"})
+        "classpath:META-INF/service.spring.xml",
+        "classpath:META-INF/activemq.spring.xml"})
 public class StockServiceTest extends AbstractTestNGSpringContextTests {
     private static final String TOPIC = "jms:topic:moreConsumers";
     private static final String QUEUE = "activemq:queue:itemQ";

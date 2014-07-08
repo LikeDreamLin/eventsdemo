@@ -1,28 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <beans xmlns="http://www.springframework.org/schema/beans"
        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:camel="http://camel.apache.org/schema/spring"
-       xmlns:broker="http://activemq.apache.org/schema/core"
        xsi:schemaLocation="
           http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
-          http://camel.apache.org/schema/spring http://camel.apache.org/schema/spring/camel-spring.xsd
-          http://activemq.apache.org/schema/core http://activemq.apache.org/schema/core/activemq-core.xsd">
-
-    <!-- Embedded ActiveMQ JMS broker server -->
-    <broker:broker useJmx="true" persistent="false"
-                   brokerName="localhost" useShutdownHook="false">
-        <broker:transportConnectors>
-            <broker:transportConnector name="tcp"
-                                       uri="tcp://localhost:61610"/>
-        </broker:transportConnectors>
-    </broker:broker>
-    <broker:connectionFactory id="jmsFactory"
-                              brokerURL="vm://localhost"/>
-
-    <bean id="activemq" class="org.apache.activemq.camel.component.ActiveMQComponent">
-        <property name="transacted" value="true"/>
-        <property name="transactionManager" ref="transactionManager"/>
-        <property name="brokerURL" value="tcp://localhost:61610"/>
-    </bean>
+          http://camel.apache.org/schema/spring http://camel.apache.org/schema/spring/camel-spring.xsd">
 
     <!-- Wrapper for a TemplateProducer -->
     <bean id="producer" class="events.camel.Producer">

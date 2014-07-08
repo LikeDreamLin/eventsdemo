@@ -11,6 +11,11 @@ import org.testng.annotations.Test;
 
 import events.common.Event;
 
+/**
+ * Simplest possible(?) Camel example.
+ * @author Anders Malmborg
+ *
+ */
 public class PojoConsumerTest
 {
     private static final String DIRECT = "direct:event";

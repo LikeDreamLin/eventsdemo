@@ -13,8 +13,11 @@ import events.camel.entities.StockItemType;
 import events.camel.repositories.StockRepository;
 
 //Load the same files here as in StockServiceTest to reuse spring context between the tests
-@ContextConfiguration(locations={"classpath:META-INF/jpa.spring.xml",
-                                "classpath:META-INF/service.spring.xml"})
+// Not reusing results in multiple spring contexts where the bitronix tx manager will
+// not start in the second context.
+@ContextConfiguration(locations = {"classpath:META-INF/jpa.spring.xml",
+        "classpath:META-INF/service.spring.xml",
+        "classpath:META-INF/activemq.spring.xml"})
 public class StockRepositoryTest extends AbstractTransactionalTestNGSpringContextTests
 {
     @Autowired

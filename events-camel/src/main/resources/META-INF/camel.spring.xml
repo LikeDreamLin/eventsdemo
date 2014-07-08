@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:camel="http://camel.apache.org/schema/spring"
+   xsi:schemaLocation="
+          http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+          http://camel.apache.org/schema/spring http://camel.apache.org/schema/spring/camel-spring.xsd">
+
+   <!-- camel context defines the route Java DSL directory -->
+   <camel:camelContext id="camel.ctx">
+      <camel:package>events.camel.routes</camel:package>
+      <!-- Proxies comes handy to hide Camel from consumer/producer. -->
+      <camel:proxy id="helloService" serviceInterface="events.camel.HelloService"
+         serviceUrl="direct:overProxy" />
+   </camel:camelContext>
+
+   <bean id="consumer1" class="events.camel.PoJoConsumer">
+      <constructor-arg name="id" value="spring1" />
+   </bean>
+   <bean id="consumer2" class="events.camel.PoJoConsumer">
+      <constructor-arg name="id" value="spring2" />
+   </bean>
+   <bean id="contributionResult" class="events.camel.ContributionResult"/>
+</beans>
+
